@@ -1,0 +1,3 @@
+# Windows-скрипти мають бути з CRLF, інакше cmd.exe плутає мітки й рядки
+*.bat text eol=crlf
+install_messages.txt text eol=crlf
