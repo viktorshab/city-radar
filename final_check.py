@@ -190,45 +190,103 @@ def main() -> int:
         ok, chat = notify.call("getChat", {"chat_id": config.TARGET_CHAT_ID})
         check("канал доступний", ok, chat.get("title", "") if ok else str(chat))
 
-    print("\n=== 7. ІНТЕРФЕЙС (лише macOS) ===")
-    try:
-        from AppKit import NSApplication
-        import gui
+    print("\n=== 7. ІНТЕРФЕЙС ===")
+    if sys.platform == "darwin":
+        try:
+            from AppKit import NSApplication
+            import gui
 
-        NSApplication.sharedApplication()
+            NSApplication.sharedApplication()
 
-        class FakeRadar:
-            running = True
-            paused = False
-            alarm = announced = active_threat = critical = None
-            standby = False
-            stats = {"seen": 0, "matched": 0, "sent": 0, "dupes": 0, "errors": 0}
-            counts = {"HIGH": 0, "MEDIUM": 0, "LOW": 0, "INFO": 0,
-                      "ALARM": 0, "CIVIL": 0}
-            started = datetime.now()
-            last_alert = None
-            daily = {}
+            class FakeRadar:
+                running = True
+                paused = False
+                alarm = announced = active_threat = critical = None
+                standby = False
+                stats = {"seen": 0, "matched": 0, "sent": 0, "dupes": 0, "errors": 0}
+                counts = {"HIGH": 0, "MEDIUM": 0, "LOW": 0, "INFO": 0,
+                          "ALARM": 0, "CIVIL": 0}
+                started = datetime.now()
+                last_alert = None
+                daily = {}
 
-        class FakeApp:
-            radar = FakeRadar()
+            class FakeApp:
+                radar = FakeRadar()
 
-            def toggle_pause(self, *a): pass
-            def send_test(self, *a): pass
-            def send_report(self, *a): pass
-            def refresh_status(self, *a): pass
-            def restart_radar(self, *a): pass
-            def cancel_alarm(self, *a): pass
+                def toggle_pause(self, *a): pass
+                def send_test(self, *a): pass
+                def send_report(self, *a): pass
+                def refresh_status(self, *a): pass
+                def restart_radar(self, *a): pass
+                def cancel_alarm(self, *a): pass
 
-        win = gui.RadarWindow.alloc().initWithApp_(FakeApp())
-        win.refresh()
-        check("вікно будується", True, f"{int(win.window.frame().size.height)} px")
-        check("три вкладки", win.tabs.numberOfTabViewItems() == 3)
-        check("підказки не порожні",
-              not [k for k in win.help_keys if not settings.HELP.get(k)],
-              f"{len(win.help_keys)} кнопок «?»")
-    except ImportError:
-        print("     пропущено (немає AppKit — не macOS). Це нормально: "
-              "на інших системах запускайте `python3 cloud_main.py`.")
+            win = gui.RadarWindow.alloc().initWithApp_(FakeApp())
+            win.refresh()
+            check("вікно будується", True, f"{int(win.window.frame().size.height)} px")
+            check("три вкладки", win.tabs.numberOfTabViewItems() == 3)
+            check("підказки не порожні",
+                  not [k for k in win.help_keys if not settings.HELP.get(k)],
+                  f"{len(win.help_keys)} кнопок «?»")
+        except ImportError:
+            print("     пропущено (немає AppKit — не macOS). Це нормально: "
+                  "на інших системах запускайте `python3 cloud_main.py`.")
+    elif sys.platform == "win32":
+        try:
+            import tkinter as tk
+
+            import gui_win
+            import tray_win
+
+            class FakeRadar:
+                running = True
+                paused = False
+                alarm = announced = active_threat = critical = None
+                standby = False
+                stats = {"seen": 0, "matched": 0, "sent": 0, "dupes": 0, "errors": 0}
+                counts = {"HIGH": 0, "MEDIUM": 0, "LOW": 0, "INFO": 0,
+                          "ALARM": 0, "CIVIL": 0}
+                started = datetime.now()
+                last_alert = None
+                daily = {}
+
+            class FakeApp:
+                radar = FakeRadar()
+
+                def toggle_pause(self, *a): pass
+                def send_test(self, *a): pass
+                def send_report(self, *a): pass
+                def send_report_yesterday(self, *a): pass
+                def refresh_status(self, *a): pass
+                def restart_radar(self, *a): pass
+                def cancel_alarm(self, *a): pass
+                def set_mode(self, *a): pass
+                def run_review(self, *a): pass
+                def send_review(self, *a): pass
+                def toggle_mute(self, *a): pass
+                def open_log(self, *a): pass
+                def open_config(self, *a): pass
+                def quit_app(self, *a): pass
+
+            root = tk.Tk()
+            root.withdraw()
+            win = gui_win.RadarWindow(FakeApp(), root)
+            win.refresh()
+            win.window.update_idletasks()
+            check("вікно Windows будується", win.window.winfo_exists() == 1,
+                  f"{win.window.winfo_reqheight()} px")
+            check("три вкладки", win.tabs.index("end") == 3)
+            check("підказки не порожні",
+                  not [k for k in win.help_keys if not settings.HELP.get(k)],
+                  f"{len(win.help_keys)} кнопок «?»")
+            check("tray_win малює іконки всіх 5 станів",
+                  set(tray_win.ICONS) == {"ok", "alert", "alarm", "paused", "error"}
+                  and all(img.size == (64, 64) and img.mode == "RGBA"
+                          for img in tray_win.ICONS.values()))
+            root.destroy()
+        except ImportError:
+            print("     пропущено (pip install -r requirements-windows.txt)")
+    else:
+        print("     пропущено (не macOS і не Windows)")
 
     print("\n=== 8. РЕЗЕРВНА КОПІЯ ===")
     tmp = os.path.join(tempfile.gettempdir(), "radar_check.zip")

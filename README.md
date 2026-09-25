@@ -36,19 +36,31 @@
 
 ## Швидкий старт
 
-Потрібен Python 3.10+ (для застосунку macOS — 3.11+).
+Потрібен Python 3.10+ (для застосунку macOS — 3.11+). Рушій один і той самий на
+обох системах, різниться лише оболонка: на Mac — іконка в рядку меню, на
+Windows — іконка в треї біля годинника. Обидві мають однакове вікно налаштувань.
+
+**macOS:**
 
 ```bash
-git clone https://github.com/merqqradar/city-radar.git && cd city-radar
+git clone https://github.com/viktorshab/city-radar.git && cd city-radar
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 ```
+
+**Windows:** завантажте репозиторій (`git clone https://github.com/viktorshab/city-radar.git`
+або кнопка **Code → Download ZIP** і розпакуйте), відкрийте папку й двічі клацніть
+**`install_windows.bat`**. Він сам поставить залежності й створить ярлик
+«Радар міста» на робочому столі. Покроково — **[docs/WINDOWS.md](docs/WINDOWS.md)**.
+
+> На Windows у всіх командах нижче замість `python3` пишіть
+> `.venv\Scripts\python` (з папки проєкту).
 
 **1. Подивитися, як воно працює — без Telegram і без налаштувань.** На вигаданому
 місті «Тестоград»:
 
 ```bash
-python3 final_check.py --sample           # перевірка рушія
+python3 final_check.py --sample           # перевірка рушія (і вікна — на Mac і Windows)
 python3 test_alerts.py --sample           # перевірка логіки звуку й повторів
 python3 replay.py examples/replay_demo --sample --show
 ```
@@ -62,8 +74,8 @@ python3 replay.py examples/replay_demo --sample --show
 **3. Підключити Telegram** (бот і канал сповіщень): скопіюйте `.env.example` у
 `.env` і впишіть значення; перевірка — `python3 test_notify.py`.
 
-**4. Запустити:** `python3 cloud_main.py` (будь-яка ОС) або застосунок macOS —
-див. **[docs/RUN_MODES.md](docs/RUN_MODES.md)**.
+**4. Запустити:** `python3 cloud_main.py` (будь-яка ОС), застосунок macOS або
+застосунок Windows (ярлик «Радар міста») — див. **[docs/RUN_MODES.md](docs/RUN_MODES.md)**.
 
 ## Із чого складається
 
@@ -76,6 +88,7 @@ python3 replay.py examples/replay_demo --sample --show
 | `notify.py`, `status.py` | Відправка в Telegram, текст закріпленого й звітів |
 | `public_source.py`, `cloud_main.py` | Режим без акаунта: читання публічних сторінок `t.me/s/…` |
 | `menubar.py`, `gui.py`, `setup.py` | Застосунок macOS (рядок меню + вікно налаштувань) |
+| `tray_win.py`, `gui_win.py`, `install_windows.bat`, `start_windows.bat` | Застосунок Windows (іконка в треї + таке саме вікно налаштувань) |
 | `final_check.py`, `test_alerts.py`, `region_check.py` | Перевірки: класифікація, логіка звуку, якість профілю |
 | `replay.py`, `backtest.py` | Прогін історії каналів через радар із підміною часу |
 | `tools/` | Підбір околиць (OpenStreetMap), збір історії без акаунта, пошук сусідніх пунктів |
@@ -94,3 +107,6 @@ python3 replay.py examples/replay_demo --sample --show
 
 MIT — див. [LICENSE](LICENSE). Дані карти в `tools/nearby_places.py` © учасники
 OpenStreetMap (ODbL).
+
+Оригінал радара і застосунок macOS — [merqqradar/city-radar](https://github.com/merqqradar/city-radar).
+У цій копії додано застосунок для Windows; рушій і файли macOS не змінено.
