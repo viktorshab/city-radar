@@ -126,7 +126,7 @@ call :say DONE04
 echo.
 call :say DONE05
 call :say DONE06
-echo       "%PROJDIR%\.venv\Scripts\python.exe" auth.py
+echo       "%PROJDIR%\.venv\Scripts\python.exe" "%PROJDIR%\auth.py"
 echo.
 call :say DONE07
 call :say DONE08
